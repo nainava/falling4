@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { insertScoreSchema, scores } from "./schema";
 
+// API definition kept empty/minimal
 export const api = {
   scores: {
     list: {

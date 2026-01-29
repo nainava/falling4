@@ -2,6 +2,8 @@ import { pgTable, text, serial, integer, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// Schema kept minimal as we aren't using a DB anymore, 
+// but Drizzle/Zod types might still be referenced in some shared code.
 export const scores = pgTable("scores", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),

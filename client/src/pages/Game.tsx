@@ -14,10 +14,11 @@ import { useGameLoop } from '@/hooks/use-game-loop';
 import { TetrisBoard } from '@/components/TetrisBoard';
 import { PiecePreview } from '@/components/PiecePreview';
 import { Leaderboard } from '@/components/Leaderboard';
-import { ScoreSubmission } from '@/components/ScoreSubmission';
+// import { ScoreSubmission } from '@/components/ScoreSubmission';
 import { MobileControls } from '@/components/MobileControls';
 import { Button } from '@/components/ui/button';
 import { Volume2, VolumeX, RotateCcw, Pause, Play } from 'lucide-react';
+import { useScores } from '@/hooks/use-scores';
 
 // --- SOUNDS ---
 const sounds = {
@@ -227,6 +228,11 @@ export default function Game() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!gameStarted || gameOver) return;
 
+      // Prevent default scrolling for game keys
+      if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
+        e.preventDefault();
+      }
+
       switch(e.code) {
         case 'ArrowLeft': moveHorizontal(-1); break;
         case 'ArrowRight': moveHorizontal(1); break;
@@ -238,7 +244,10 @@ export default function Game() {
           }
           break;
         case 'ArrowUp': rotate(); break;
-        case 'Space': hardDrop(); break;
+        case 'Space': 
+          // Hard drop needs to be robust
+          hardDrop(); 
+          break;
         case 'ShiftLeft':
         case 'ShiftRight': hold(); break;
         case 'KeyP': setIsPaused(prev => !prev); break;
@@ -347,15 +356,30 @@ export default function Game() {
 
         {/* Game Over Overlay */}
         {gameOver && (
-          <div className="absolute inset-0 bg-black/90 flex items-center justify-center z-30 backdrop-blur-md p-4 rounded-lg">
-            <ScoreSubmission 
-              score={score} 
-              level={level} 
-              onComplete={() => {
+          <div className="absolute inset-0 bg-black/90 flex flex-col items-center justify-center z-30 backdrop-blur-md p-4 rounded-lg">
+            <h2 className="text-4xl text-neon-pink font-display mb-4">GAME OVER</h2>
+            <div className="text-center mb-8">
+              <p className="text-muted-foreground">Final Score</p>
+              <p className="text-3xl text-white font-mono">{score.toLocaleString()}</p>
+            </div>
+             <Button 
+              size="lg" 
+              onClick={() => {
+                // Save local high score
+                const currentHighScores = JSON.parse(localStorage.getItem('tetris-highscores') || '[]');
+                const newScore = { score, date: new Date().toISOString() };
+                const newScores = [...currentHighScores, newScore]
+                  .sort((a: any, b: any) => b.score - a.score)
+                  .slice(0, 5);
+                localStorage.setItem('tetris-highscores', JSON.stringify(newScores));
+                
                 setGameOver(false);
                 setGameStarted(false);
-              }} 
-            />
+              }}
+              className="text-xl font-bold bg-primary hover:bg-primary/90"
+            >
+              PLAY AGAIN
+            </Button>
           </div>
         )}
       </div>
@@ -366,8 +390,19 @@ export default function Game() {
           <PiecePreview label="NEXT" tetromino={nextPiece} />
         </div>
         
-        <div className="flex-1 min-h-0">
-          <Leaderboard />
+        <div className="flex-1 min-h-0 bg-black/50 border border-secondary/30 p-4 rounded-xl backdrop-blur-sm">
+          <h3 className="text-sm text-secondary uppercase tracking-widest mb-4 border-b border-secondary/20 pb-2">High Scores</h3>
+           <div className="space-y-2">
+            {(JSON.parse(localStorage.getItem('tetris-highscores') || '[]') as any[]).map((s, i) => (
+              <div key={i} className="flex justify-between text-sm">
+                <span className="text-muted-foreground">#{i + 1}</span>
+                <span className="font-mono text-white">{s.score.toLocaleString()}</span>
+              </div>
+            ))}
+            {!(localStorage.getItem('tetris-highscores')) && (
+              <p className="text-xs text-muted-foreground text-center py-4">No scores yet</p>
+            )}
+          </div>
         </div>
       </div>
 
