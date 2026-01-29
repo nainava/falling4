@@ -1,5 +1,5 @@
-import React, { useRef, useEffect } from "react";
-import { Grid, COLORS, Tetromino } from "@/lib/tetris-engine";
+import React from "react";
+import { Grid, COLORS, Tetromino, TETROMINOS } from "@/lib/tetris-engine";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface TetrisBoardProps {
