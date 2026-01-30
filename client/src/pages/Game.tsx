@@ -291,7 +291,11 @@ export default function Game() {
   // Input Handlers with DAS
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.repeat) return; // Ignore browser key repeat, we handle our own
+      // Only ignore repeats for left/right arrows (we handle DAS ourselves)
+      // Allow repeats for spacebar, soft drop, etc.
+      if (e.repeat && (e.code === 'ArrowLeft' || e.code === 'ArrowRight')) {
+        return;
+      }
       
       if (!gameStarted && !gameOver) return;
       
