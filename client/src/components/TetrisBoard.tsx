@@ -93,11 +93,13 @@ export function TetrisBoard({ grid, currentPiece, ghostPiece }: TetrisBoardProps
   };
 
   return (
-    <div className="relative p-1 bg-black/40 border-4 border-primary/50 rounded-lg shadow-[0_0_30px_rgba(236,72,153,0.3)] backdrop-blur-sm">
-      {/* Grid Container */}
+    <div className="relative p-1 bg-black/40 border-2 md:border-4 border-primary/50 rounded-lg shadow-[0_0_20px_rgba(236,72,153,0.3)] backdrop-blur-sm">
+      {/* Grid Container - responsive sizing */}
       <div 
-        className="grid grid-rows-[repeat(20,minmax(0,1fr))] grid-cols-[repeat(10,minmax(0,1fr))] w-full aspect-[1/2] gap-[1px] bg-black/80"
-        style={{ width: 'min(80vw, 350px)' }}
+        className="grid grid-rows-[repeat(20,minmax(0,1fr))] grid-cols-[repeat(10,minmax(0,1fr))] aspect-[1/2] gap-[1px] bg-black/80"
+        style={{ 
+          width: 'clamp(140px, min(40vh, 45vw), 280px)',
+        }}
       >
         {grid.map((row, y) =>
           row.map((cell, x) => renderCell(cell, x, y))
