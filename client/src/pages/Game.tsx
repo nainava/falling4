@@ -36,8 +36,8 @@ const sounds = {
 // --- GAME CONFIG ---
 const BASE_SPEED = 1000;
 const SPEED_MULTIPLIER = 0.85;
-const DAS_DELAY = 170; // Delayed Auto Shift - initial delay before repeat
-const DAS_RATE = 50;   // How fast it repeats after initial delay
+const DAS_DELAY = 100; // Delayed Auto Shift - initial delay before repeat (faster!)
+const DAS_RATE = 30;   // How fast it repeats after initial delay (faster!)
 
 type HighScore = { score: number; date: string };
 
