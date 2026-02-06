@@ -82,13 +82,6 @@ export default function Game() {
   const dropCounter = useRef(0);
   const dropInterval = useRef(BASE_SPEED);
   
-  // DAS (Delayed Auto Shift) for responsive movement
-  const dasDirection = useRef<-1 | 1 | null>(null);
-  const dasTimer = useRef<number | null>(null);
-  const dasActive = useRef(false);
-
-  const dasTimeout = useRef<NodeJS.Timeout | null>(null);
-
   // Volume effect
   useEffect(() => {
     Howler.volume(volume / 100);
@@ -252,60 +245,9 @@ export default function Game() {
     }
   }, gameStarted);
 
-  // DAS System for responsive left/right movement
-  const startDAS = useCallback((dir: -1 | 1) => {
-    if (dasDirection.current === dir) return;
-    
-    // Clear any existing DAS
-    if (dasTimer.current) {
-      clearInterval(dasTimer.current);
-    }
-    if (dasTimeout.current) {
-      clearTimeout(dasTimeout.current);
-    }
-    
-    dasDirection.current = dir;
-    dasActive.current = false;
-    
-    // Initial move
-    moveHorizontal(dir);
-    
-    // After DAS_DELAY, start auto-repeat
-    dasTimeout.current = setTimeout(() => {
-      if (dasDirection.current === dir) {
-        dasActive.current = true;
-        dasTimer.current = window.setInterval(() => {
-          if (dasDirection.current === dir) {
-            moveHorizontal(dir);
-          }
-        }, DAS_RATE);
-      }
-    }, DAS_DELAY);
-  }, [moveHorizontal]);
-
-  const stopDAS = useCallback((dir: -1 | 1) => {
-    if (dasDirection.current === dir) {
-      dasDirection.current = null;
-      if (dasTimer.current) {
-        clearInterval(dasTimer.current);
-        dasTimer.current = null;
-      }
-      if (dasTimeout.current) {
-        clearTimeout(dasTimeout.current);
-        dasTimeout.current = null;
-      }
-    }
-  }, []);
-
-  // Input Handlers with DAS
+  // Input Handlers
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Only ignore repeats for left/right arrows (we handle DAS ourselves)
-      // Allow repeats for spacebar, soft drop, etc.
-      if (e.repeat && (e.code === 'ArrowLeft' || e.code === 'ArrowRight')) {
-        return;
-      }
-      
       if (!gameStarted && !gameOver) return;
       
       // Allow pause toggle even when paused
@@ -319,16 +261,17 @@ export default function Game() {
       if (gameOver) return;
       if (isPaused) return;
 
+      // Prevent default scrolling for game keys
       if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
         e.preventDefault();
       }
 
       switch(e.code) {
         case 'ArrowLeft': 
-          startDAS(-1);
+          moveHorizontal(-1);
           break;
         case 'ArrowRight': 
-          startDAS(1);
+          moveHorizontal(1);
           break;
         case 'ArrowDown': 
           if (activePiece && !checkCollision(activePiece.tetromino, grid, { ...activePiece.pos, y: activePiece.pos.y + 1 })) {
@@ -352,22 +295,11 @@ export default function Game() {
       }
     };
 
-    const handleKeyUp = (e: KeyboardEvent) => {
-      if (e.code === 'ArrowLeft') {
-        stopDAS(-1);
-      } else if (e.code === 'ArrowRight') {
-        stopDAS(1);
-      }
-    };
-
     window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
-      if (dasTimer.current) clearInterval(dasTimer.current);
     };
-  }, [activePiece, grid, gameOver, isPaused, gameStarted, rotate, hardDrop, hold, startDAS, stopDAS]);
+  }, [activePiece, grid, gameOver, isPaused, gameStarted, rotate, hardDrop, hold, moveHorizontal]);
 
   const getGhostPiece = () => {
     if (!activePiece || gameOver || isPaused) return null;
