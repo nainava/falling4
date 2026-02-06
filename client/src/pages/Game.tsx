@@ -36,8 +36,8 @@ const sounds = {
 // --- GAME CONFIG ---
 const BASE_SPEED = 1000;
 const SPEED_MULTIPLIER = 0.85;
-const DAS_DELAY = 100; // Delayed Auto Shift - initial delay before repeat (faster!)
-const DAS_RATE = 30;   // How fast it repeats after initial delay (faster!)
+const DAS_DELAY = 120; // Slight delay before repeating
+const DAS_RATE = 40;   // Fast repeat rate for fluid movement
 
 type HighScore = { score: number; date: string };
 
@@ -86,6 +86,8 @@ export default function Game() {
   const dasDirection = useRef<-1 | 1 | null>(null);
   const dasTimer = useRef<number | null>(null);
   const dasActive = useRef(false);
+
+  const dasTimeout = useRef<NodeJS.Timeout | null>(null);
 
   // Volume effect
   useEffect(() => {
@@ -258,6 +260,9 @@ export default function Game() {
     if (dasTimer.current) {
       clearInterval(dasTimer.current);
     }
+    if (dasTimeout.current) {
+      clearTimeout(dasTimeout.current);
+    }
     
     dasDirection.current = dir;
     dasActive.current = false;
@@ -266,7 +271,7 @@ export default function Game() {
     moveHorizontal(dir);
     
     // After DAS_DELAY, start auto-repeat
-    setTimeout(() => {
+    dasTimeout.current = setTimeout(() => {
       if (dasDirection.current === dir) {
         dasActive.current = true;
         dasTimer.current = window.setInterval(() => {
@@ -284,6 +289,10 @@ export default function Game() {
       if (dasTimer.current) {
         clearInterval(dasTimer.current);
         dasTimer.current = null;
+      }
+      if (dasTimeout.current) {
+        clearTimeout(dasTimeout.current);
+        dasTimeout.current = null;
       }
     }
   }, []);
