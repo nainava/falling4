@@ -248,17 +248,14 @@ export default function Game() {
   // Input Handlers
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!gameStarted && !gameOver) return;
+      if (!gameStarted || gameOver) return;
       
       // Allow pause toggle even when paused
       if (e.code === 'KeyP' || e.code === 'Escape') {
-        if (gameStarted && !gameOver) {
-          setIsPaused(prev => !prev);
-        }
+        setIsPaused(prev => !prev);
         return;
       }
       
-      if (gameOver) return;
       if (isPaused) return;
 
       // Prevent default scrolling for game keys
