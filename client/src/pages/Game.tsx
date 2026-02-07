@@ -293,18 +293,29 @@ export default function Game() {
         e.preventDefault();
       }
 
+      // If key is already held, don't trigger initial move again
+      const isRepeat = e.repeat;
+
       switch(e.code) {
         case 'ArrowLeft': 
+          if (!isRepeat) {
+            moveHorizontal(-1);
+            lastMoveTime.current = Date.now() + 100; // Extra delay for first repeat
+          }
           moveDir.current = -1;
           break;
         case 'ArrowRight': 
+          if (!isRepeat) {
+            moveHorizontal(1);
+            lastMoveTime.current = Date.now() + 100; // Extra delay for first repeat
+          }
           moveDir.current = 1;
           break;
         case 'ArrowDown': 
           if (activePiece && !checkCollision(activePiece.tetromino, grid, { ...activePiece.pos, y: activePiece.pos.y + 1 })) {
             setActivePiece(p => p && ({ ...p, pos: { ...p.pos, y: p.pos.y + 1 } }));
             setScore(s => s + 1);
-            dropCounter.current = 0; // Reset natural drop timer on soft drop
+            dropCounter.current = 0;
           }
           break;
         case 'ArrowUp': 
