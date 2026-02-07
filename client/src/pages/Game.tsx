@@ -81,7 +81,14 @@ export default function Game() {
   // Timing
   const dropCounter = useRef(0);
   const dropInterval = useRef(BASE_SPEED);
-  
+  const lockDelayCounter = useRef(0);
+  const LOCK_DELAY = 500; // ms to allow sliding at bottom
+
+  // Movement State for smooth input
+  const moveDir = useRef<0 | 1 | -1>(0);
+  const lastMoveTime = useRef(0);
+  const MOVE_SPEED = 50; // ms between horizontal moves
+
   // Volume effect
   useEffect(() => {
     Howler.volume(volume / 100);
@@ -110,6 +117,8 @@ export default function Game() {
     setActivePiece({ pos: newPos, tetromino: piece });
     if (!type) setNextPiece(next);
     setCanHold(true);
+    dropCounter.current = 0;
+    lockDelayCounter.current = 0;
   }, [nextPiece, grid, score]);
 
   const resetGame = () => {
@@ -123,6 +132,7 @@ export default function Game() {
     dropInterval.current = BASE_SPEED;
     setGameStarted(true);
     setIsPaused(false);
+    moveDir.current = 0;
     
     setTimeout(() => spawnPiece(randomTetromino()), 0);
     
@@ -137,7 +147,11 @@ export default function Game() {
     if (!checkCollision(activePiece.tetromino, grid, newPos)) {
       setActivePiece({ ...activePiece, pos: newPos });
       if (!isMuted) sounds.move.play();
+      // Reset lock delay on successful movement
+      lockDelayCounter.current = 0;
+      return true;
     }
+    return false;
   }, [activePiece, gameOver, isPaused, grid, isMuted]);
 
   const rotate = useCallback(() => {
@@ -151,6 +165,8 @@ export default function Game() {
       if (!checkCollision(rotatedPiece, grid, newPos)) {
         setActivePiece({ ...activePiece, tetromino: rotatedPiece, pos: newPos });
         if (!isMuted) sounds.rotate.play();
+        // Reset lock delay on successful rotation
+        lockDelayCounter.current = 0;
         return;
       }
     }
@@ -231,17 +247,33 @@ export default function Game() {
   useGameLoop((deltaTime) => {
     if (gameOver || isPaused || !gameStarted || !activePiece) return;
 
-    dropCounter.current += deltaTime;
-    if (dropCounter.current > dropInterval.current) {
-      const newPos = { ...activePiece.pos, y: activePiece.pos.y + 1 };
-      
-      if (checkCollision(activePiece.tetromino, grid, newPos)) {
-        lockPiece(activePiece);
-      } else {
-        setActivePiece({ ...activePiece, pos: newPos });
+    // Handle smooth horizontal movement
+    if (moveDir.current !== 0) {
+      const now = Date.now();
+      if (now - lastMoveTime.current > MOVE_SPEED) {
+        moveHorizontal(moveDir.current);
+        lastMoveTime.current = now;
       }
-      
-      dropCounter.current = 0;
+    }
+
+    // Handle gravity
+    dropCounter.current += deltaTime;
+    const nextYPos = { ...activePiece.pos, y: activePiece.pos.y + 1 };
+    const isTouchingBottom = checkCollision(activePiece.tetromino, grid, nextYPos);
+
+    if (isTouchingBottom) {
+      lockDelayCounter.current += deltaTime;
+      if (lockDelayCounter.current >= LOCK_DELAY) {
+        lockPiece(activePiece);
+        lockDelayCounter.current = 0;
+        dropCounter.current = 0;
+      }
+    } else {
+      lockDelayCounter.current = 0;
+      if (dropCounter.current > dropInterval.current) {
+        setActivePiece({ ...activePiece, pos: nextYPos });
+        dropCounter.current = 0;
+      }
     }
   }, gameStarted);
 
@@ -250,7 +282,6 @@ export default function Game() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!gameStarted || gameOver) return;
       
-      // Allow pause toggle even when paused
       if (e.code === 'KeyP' || e.code === 'Escape') {
         setIsPaused(prev => !prev);
         return;
@@ -258,22 +289,22 @@ export default function Game() {
       
       if (isPaused) return;
 
-      // Prevent default scrolling for game keys
       if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
         e.preventDefault();
       }
 
       switch(e.code) {
         case 'ArrowLeft': 
-          moveHorizontal(-1);
+          moveDir.current = -1;
           break;
         case 'ArrowRight': 
-          moveHorizontal(1);
+          moveDir.current = 1;
           break;
         case 'ArrowDown': 
           if (activePiece && !checkCollision(activePiece.tetromino, grid, { ...activePiece.pos, y: activePiece.pos.y + 1 })) {
             setActivePiece(p => p && ({ ...p, pos: { ...p.pos, y: p.pos.y + 1 } }));
             setScore(s => s + 1);
+            dropCounter.current = 0; // Reset natural drop timer on soft drop
           }
           break;
         case 'ArrowUp': 
@@ -292,9 +323,19 @@ export default function Game() {
       }
     };
 
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.code === 'ArrowLeft' && moveDir.current === -1) {
+        moveDir.current = 0;
+      } else if (e.code === 'ArrowRight' && moveDir.current === 1) {
+        moveDir.current = 0;
+      }
+    };
+
     window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
     };
   }, [activePiece, grid, gameOver, isPaused, gameStarted, rotate, hardDrop, hold, moveHorizontal]);
 
