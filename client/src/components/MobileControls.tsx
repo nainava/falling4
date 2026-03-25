@@ -8,7 +8,6 @@ interface MobileControlsProps {
   onRotate: () => void;
   onSoftDrop: () => void;
   onHardDrop: () => void;
-  onHold: () => void;
   onPause: () => void;
   isPaused: boolean;
 }
@@ -19,7 +18,6 @@ export function MobileControls({
   onRotate,
   onSoftDrop,
   onHardDrop,
-  onHold,
   onPause,
   isPaused
 }: MobileControlsProps) {
@@ -33,12 +31,8 @@ export function MobileControls({
 
   return (
     <div className="flex flex-col gap-4 w-full max-w-sm mx-auto mt-4 px-4 pb-4 select-none touch-manipulation">
-      {/* Top Row: Hold, Pause, Hard Drop */}
+      {/* Top Row: Pause, Hard Drop */}
       <div className="flex justify-between items-center px-2">
-        <button onClick={onHold} className={`${btnClass} !w-12 !h-12 !rounded-lg bg-yellow-500/20 border-yellow-500/50`}>
-          <span className="text-xs font-bold text-yellow-500">HOLD</span>
-        </button>
-        
         <button onClick={onPause} className={`${btnClass} !w-12 !h-12 !rounded-lg bg-blue-500/20 border-blue-500/50`}>
           {isPaused ? <Play className={iconClass} /> : <Pause className={iconClass} />}
         </button>

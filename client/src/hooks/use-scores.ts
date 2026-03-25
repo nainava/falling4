@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api, type InsertScore } from "@shared/routes";
+import { api } from "@shared/routes";
+import type { InsertScore } from "@shared/schema";
 
 export function useScores() {
   return useQuery({

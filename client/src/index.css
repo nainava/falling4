@@ -8,41 +8,91 @@
   --font-display: 'Press Start 2P', cursive;
   --font-mono: 'Space Mono', monospace;
 
-  /* Neon Cyberpunk Palette */
+  /* Neon Cyberpunk Palette (Dark Mode - Default) */
   --background: 260 50% 10%;
   --foreground: 280 30% 95%;
-  
+
   --primary: 320 100% 60%; /* Neon Pink */
   --primary-foreground: 320 100% 95%;
-  
+
   --secondary: 190 100% 50%; /* Cyan */
   --secondary-foreground: 190 100% 10%;
-  
+
   --muted: 260 30% 20%;
   --muted-foreground: 260 20% 70%;
-  
+
   --accent: 45 100% 60%; /* Neon Yellow */
   --destructive: 0 100% 60%; /* Neon Red */
-  
+
   --border: 260 30% 30%;
   --input: 260 30% 20%;
   --ring: 320 100% 60%;
-  
+
   --radius: 0.5rem;
+
+  --board-outer: rgba(0, 0, 0, 0.4);
+  --board-bg: rgba(0, 0, 0, 0.8);
+  --cell-empty-border: rgba(255, 255, 255, 0.05);
+  --cell-empty-bg: rgba(255, 255, 255, 0.02);
+  --overlay-bg: rgba(0, 0, 0, 0.8);
+  --board-border: rgba(236, 72, 153, 0.5);
+  --panel-bg: rgba(0, 0, 0, 0.5);
+}
+
+:root.light {
+  --background: 220 20% 96%;
+  --foreground: 220 20% 15%;
+
+  --primary: 320 80% 50%;
+  --primary-foreground: 0 0% 100%;
+
+  --secondary: 190 70% 40%;
+  --secondary-foreground: 0 0% 100%;
+
+  --muted: 220 15% 88%;
+  --muted-foreground: 220 10% 45%;
+
+  --accent: 45 90% 50%;
+  --destructive: 0 80% 55%;
+
+  --border: 220 15% 80%;
+  --input: 220 15% 90%;
+  --ring: 320 80% 50%;
+
+  --board-outer: rgba(185, 200, 220, 0.6);
+  --board-bg: rgb(200, 210, 225);
+  --cell-empty-border: rgba(0, 0, 0, 0.08);
+  --cell-empty-bg: rgba(255, 255, 255, 0.3);
+  --overlay-bg: rgba(175, 188, 205, 0.85);
+  --board-border: rgba(180, 195, 215, 0.8);
+  --panel-bg: rgba(185, 200, 220, 0.5);
 }
 
 @layer base {
   body {
     @apply bg-background text-foreground font-mono antialiased overflow-hidden;
-    background-image: 
+    background-image:
       radial-gradient(circle at 50% 50%, rgba(76, 29, 149, 0.2) 0%, transparent 50%),
       linear-gradient(rgba(17, 24, 39, 0.9) 0%, rgba(17, 24, 39, 0.9) 100%),
       url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  .light body,
+  :root.light body {
+    background-image: none;
+    background-color: hsl(var(--background));
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
     @apply text-primary tracking-widest uppercase drop-shadow-[0_0_10px_rgba(236,72,153,0.5)];
+  }
+
+  .light h1, .light h2, .light h3, .light h4, .light h5, .light h6 {
+    filter: none;
+    -webkit-filter: none;
+    text-shadow: none;
   }
 }
 
@@ -64,6 +114,11 @@
     background-image: linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
                       linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
   }
+}
+
+/* Light mode: hide CRT scanlines and reduce glow effects */
+.light .crt-scanlines {
+  display: none;
 }
 
 /* Custom Scrollbar for Leaderboard */
