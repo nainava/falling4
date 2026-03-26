@@ -458,7 +458,10 @@ export default function Game() {
           {/* Overlays (positioned over the board only) */}
           {!gameStarted && !gameOver && (
             <div className="absolute inset-0 flex flex-col items-center justify-center z-20 backdrop-blur-sm border-2 border-primary/20 p-4" style={{ backgroundColor: 'var(--overlay-bg)' }}>
-              <img src="/falling4.svg" alt="Falling 4" className="w-full max-h-[50%] object-contain mb-4 sm:mb-6" />
+              {/* <img src="/falling4.svg" alt="Falling 4" className="w-full max-h-[50%] object-contain mb-4 sm:mb-6" /> */}
+              <h1 className="text-2xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 text-center tracking-wider" style={{ fontFamily: "var(--font-display)", background: 'linear-gradient(to bottom, #ec4899, #8b5cf6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', textShadow: 'none', filter: 'drop-shadow(0 0 20px rgba(236,72,153,0.5))' }}>
+                FALLING 4
+              </h1>
               <Button size="lg" onClick={resetGame}
                 className="text-sm sm:text-lg font-bold bg-primary hover:bg-primary/90 text-white px-4 sm:px-6 py-3 sm:py-4 shadow-[0_0_20px_rgba(236,72,153,0.5)]"
                 data-testid="button-start">START GAME</Button>
